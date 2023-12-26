@@ -3,11 +3,13 @@ defmodule RealtimeWeb.ProductLive.Index do
 
   alias Realtime.Warehouse
   alias Realtime.Warehouse.Product
+  alias Phoenix.Socket.Broadcast
+
+  @topic "products"
 
   @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Warehouse.subscribe()
-
+    RealtimeWeb.Endpoint.subscribe(@topic)
     {:ok, stream(socket, :products, Warehouse.list_products())}
   end
 
@@ -34,21 +36,32 @@ defmodule RealtimeWeb.ProductLive.Index do
     |> assign(:product, nil)
   end
 
-  # @impl true
-  # def handle_info({RealtimeWeb.ProductLive.FormComponent, {:saved, product}}, socket) do
-  #   {:noreply, stream_insert(socket, :products, product)}
-  # end
+  @impl true
+  def handle_info({RealtimeWeb.ProductLive.FormComponent, {:saved, product}}, socket) do
+    {:noreply, stream_insert(socket, :products, product)}
+  end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     product = Warehouse.get_product!(id)
     {:ok, _} = Warehouse.delete_product(product)
 
+    {:ok, _} = RealtimeWeb.Endpoint.broadcast_from!(self(), @topic, "product_deleted", product)
+    # RealtimeWeb.Endpoint.broadcast_from!(self(), "room:superadmin", "new_msg", %{uid: uid, body: body})
+
     {:noreply, stream_delete(socket, :products, product)}
   end
 
   @impl true
-  def handle_info({:product_created, product}, socket) do
-    {:noreply, update(socket, :products, fn products -> [product | products] end)}
+  def handle_info(%Broadcast{topic: _, event: _event, payload: _product}, socket) do
+    {:ok, stream(socket, :products, Warehouse.list_products())}
+    # {:noreply, update(socket, :products, fn products -> [product | products] end)}
+
+    # {:ok, _} ->
+    #   socket = update(socket, :products, fn products -> &Enum.reject(&1.id == product.id) end)
+    #   {:noreply, socket}
+
+    # {:error, _} ->
+    #   {:noreply, socket}
   end
 end

@@ -4,10 +4,12 @@ defmodule Realtime.Warehouse do
   """
 
   import Ecto.Query, warn: false
-  # alias ElixirSense.Plugins.Phoenix
+  alias ElixirSense.Plugins.Phoenix
   alias Realtime.Repo
 
   alias Realtime.Warehouse.Product
+
+  # @topic "products"
 
   @doc """
   Returns the list of products.
@@ -54,7 +56,7 @@ defmodule Realtime.Warehouse do
     %Product{}
     |> Product.changeset(attrs)
     |> Repo.insert()
-    |> broadcast(:product_created)
+    # |> broadcast(:product_created)
   end
 
   @doc """
@@ -73,7 +75,7 @@ defmodule Realtime.Warehouse do
     product
     |> Product.changeset(attrs)
     |> Repo.update()
-    |> broadcast(:product_updated)
+    # |> broadcast(:product_updated)
   end
 
   @doc """
@@ -105,13 +107,13 @@ defmodule Realtime.Warehouse do
     Product.changeset(product, attrs)
   end
 
-  def subscribe do
-    Phoenix.PubSub.subscribe(Realtime.PubSub, "products")
-  end
+  # def subscribe do
+  #   Phoenix.PubSub.subscribe(Realtime.PubSub, @topic)
+  # end
 
-  defp broadcast({:error, _reason} = error, _event), do: error
-  defp broadcast({:ok, product}, event) do
-    Phoenix.PubSub.broadcast(Realtime.PubSub, "products", {event, product})
-    {:ok, product}
-  end
+  # defp broadcast({:error, _reason} = error, _event), do: error
+  # defp broadcast({:ok, product}, event) do
+    # Phoenix.PubSub.broadcast(Realtime.PubSub, @topic, {event, product})
+    # {:ok, product}
+  # end
 end

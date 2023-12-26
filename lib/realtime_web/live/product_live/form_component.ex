@@ -3,6 +3,8 @@ defmodule RealtimeWeb.ProductLive.FormComponent do
 
   alias Realtime.Warehouse
 
+  @topic "products"
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -59,10 +61,12 @@ defmodule RealtimeWeb.ProductLive.FormComponent do
       {:ok, product} ->
         notify_parent({:saved, product})
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Product updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+      {:noreply,
+        socket
+        |> put_flash(:info, "Product updated successfully")
+        |> push_patch(to: socket.assigns.patch)}
+
+      RealtimeWeb.Endpoint.broadcast_from(self(), @topic, "product_updated", product)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -74,13 +78,16 @@ defmodule RealtimeWeb.ProductLive.FormComponent do
       {:ok, product} ->
         notify_parent({:saved, product})
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Product created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+      {:noreply,
+        socket
+        |> put_flash(:info, "Product created successfully")
+        |> push_patch(to: socket.assigns.patch)}
+
+      RealtimeWeb.Endpoint.broadcast_from(self(), @topic, "product_created", product)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
+
     end
   end
 

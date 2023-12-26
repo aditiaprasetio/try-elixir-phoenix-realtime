@@ -19,6 +19,7 @@ config :realtime, RealtimeWeb.Endpoint,
     formats: [html: RealtimeWeb.ErrorHTML, json: RealtimeWeb.ErrorJSON],
     layout: false
   ],
+  # pubsub: [name: Realtime.PubSub, adapter: Phoenix.PubSub.PG2],
   pubsub_server: Realtime.PubSub,
   live_view: [signing_salt: "U+SjO2as"]
 

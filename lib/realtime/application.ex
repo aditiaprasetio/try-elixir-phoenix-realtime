@@ -17,7 +17,7 @@ defmodule Realtime.Application do
       # Start a worker by calling: Realtime.Worker.start_link(arg)
       # {Realtime.Worker, arg},
       # Start to serve requests, typically the last entry
-      RealtimeWeb.Endpoint
+      RealtimeWeb.Endpoint,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
